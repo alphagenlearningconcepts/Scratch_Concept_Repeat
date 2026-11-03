@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Scratch — Repeat & Repeat Until</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#5E48C4',
+                            purpleDark: '#4A3AAD',
+                            purpleMid: '#7B6ED4',
+                            purplePale: '#EAE7FE',
+                            purpleGhost: '#F5F4FF',
+
+                            yellow: '#FFD071',
+                            yellowDark: '#E6B84A',
+                            yellowPale: '#FFF3CC',
+
+                            nearBlack: '#1A1A1A',
+                            darkGrey: '#404048',
+                            midGrey: '#888896',
+                            lightGrey: '#F2F2F4',
+
+                            cyan: '#59E4FB',
+                            cyanDark: '#055F6E',
+                            cyanPale: '#E0FAFE',
+
+                            coral: '#ED5661',
+                            coralDark: '#993040',
+                            coralPale: '#FFF0F1',
+
+                            green: '#59A942',
+                            greenDark: '#397A2D'
+                        },
+                        alphagen: {
+                            purple: '#5E48C4',
+                            purpleDark: '#4A3AAD',
+                            purpleMid: '#7B6ED4',
+                            yellow: '#FFD071',
+                            yellowDark: '#E6B84A',
+                            nearBlack: '#1A1A1A'
+                        }
+                    },
+
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #F5F4FF;
+            color: #1A1A1A;
+            user-select: none;
+        }
+
+        .yellow-highlight {
+            position: relative;
+            display: inline-block;
+        }
+
+        .yellow-highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: #FFD071;
+            z-index: -1;
+            border-radius: 4px;
+        }
+
+        /* =========================
+           SLIDES / SCROLLING FIX
+        ========================= */
+
+        .slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #main-content {
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            align-items: flex-start;
+        }
+
+        .slide.active {
+            min-height: min-content;
+            padding-top: 24px;
+            padding-bottom: 30px;
+        }
+
+        /* =========================
+           SCRATCH BLOCKS
+        ========================= */
+
+        .scratch-block {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 6px 11px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 7px;
+
+            box-shadow:
+                inset 0 -3px rgba(0, 0, 0, 0.12),
+                0 3px 5px rgba(0, 0, 0, 0.12);
+
+            transition:
+                transform 0.15s ease,
+                filter 0.15s ease;
+        }
+
+        .scratch-block:hover {
+            filter: brightness(1.06);
+            transform: translateY(-1px);
+        }
+
+        .scratch-yellow {
+            background: #FFBF00;
+        }
+
+        .scratch-orange {
+            background: #FFAB19;
+        }
+
+        .scratch-blue {
+            background: #4C97FF;
+        }
+
+        .scratch-cyan {
+            background: #5CB1D6;
+        }
+
+        .scratch-purple {
+            background: #9966FF;
+        }
+
+        .scratch-green {
+            background: #59A942;
+        }
+
+        .scratch-red {
+            background: #D94F4F;
+        }
+
+        .scratch-c-block {
+            background: #FFAB19;
+            border-radius: 7px;
+            padding: 8px 10px;
+        }
+
+        .scratch-c-inner {
+            background: white;
+            border-radius: 6px;
+            padding: 7px;
+            margin-top: 5px;
+            color: #555;
+        }
+
+        .scratch-input {
+            background: white;
+            color: #1A1A1A;
+            border-radius: 3px;
+            padding: 1px 6px;
+            margin: 0 2px;
+            font-weight: bold;
+        }
+
+        .scratch-boolean {
+            background: #5CB1D6;
+            color: white;
+            border-radius: 5px;
+            padding: 2px 6px;
+        }
+
+        .scratch-variable {
+            background: #FFBF00;
+            color: #1A1A1A;
+            border-radius: 5px;
+            padding: 2px 5px;
+        }
+
+        .scratch-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .scratch-stack .scratch-block {
+            border-radius: 7px;
+        }
+
+        .scratch-hat {
+            border-radius: 16px 7px 7px 7px;
+        }
+
+        .scratch-c-loop {
+            background: #FFAB19;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .scratch-c-loop-header {
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            padding-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        .scratch-c-loop-body {
+            background: white;
+            border-radius: 6px;
+            padding: 8px;
+            min-height: 45px;
+        }
+
+        /* =========================
+           ROPE
+        ========================= */
+
+        .rope-stage {
+            position: relative;
+            height: 240px;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #F5F4FF;
+            border: 2px dashed #7B6ED4;
+        }
+
+        .jumper {
+            position: absolute;
+            left: 50%;
+            bottom: 35px;
+            transform: translateX(-50%);
+            font-size: 52px;
+            transition: transform 0.18s ease;
+        }
+
+        .rope {
+            position: absolute;
+            left: 50%;
+            bottom: 35px;
+            width: 170px;
+            height: 90px;
+            transform: translateX(-50%);
+            border: 5px solid #ED5661;
+            border-top: none;
+            border-radius: 0 0 100px 100px;
+            pointer-events: none;
+        }
+
+        .jumping {
+            animation: jump 0.38s ease-in-out;
+        }
+
+        @keyframes jump {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-48px);
+            }
+
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .rope-spin {
+            animation: ropeSpin 0.38s ease-in-out;
+        }
+
+        @keyframes ropeSpin {
+            0% {
+                transform: translateX(-50%) rotate(0deg);
+            }
+
+            50% {
+                transform: translateX(-50%) rotate(180deg);
+            }
+
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        /* =========================
+           WATER BOTTLE
+        ========================= */
+
+        .bottle-stage {
+            position: relative;
+            height: 240px;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #F5F4FF;
+            border: 2px dashed #7B6ED4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bottle {
+            position: relative;
+            width: 95px;
+            height: 150px;
+            border: 5px solid #5CB1D6;
+            border-radius: 14px 14px 20px 20px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .bottle-cap {
+            position: absolute;
+            top: -17px;
+            left: 25px;
+            width: 40px;
+            height: 18px;
+            background: #5CB1D6;
+            border-radius: 7px 7px 0 0;
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: #59E4FB;
+            transition: height 0.25s ease;
+        }
+
+        .water-label {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            bottom: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #055F6E;
+            z-index: 2;
+        }
+
+        /* =========================
+           COMPARISON
+        ========================= */
+
+        .comparison-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .active-choice {
+            box-shadow:
+                0 0 0 3px #FFD071,
+                0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        /* =========================
+           QUIZ
+        ========================= */
+
+        .quiz-feedback {
+            min-height: 28px;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option {
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            transform: translateY(-2px);
+        }
+
+        /* =========================
+           STAGE ANIMATIONS (SLIDES 5 & 6)
+        ========================= */
+
+        .scratch-stage {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #FFFFFF;
+            border: 2px solid #EAE7FE;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =========================
+           FOOTER & SCROLLBAR
+        ========================= */
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1A1A1A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #5E48C4;
+            border-radius: 4px;
+        }
+
+
+        /* Final slide: align both quiz answer groups */
+        #slide-7 .quiz-option {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+        }
+
+        #slide-7 .quiz-option .scratch-c-loop {
+            width: 100%;
+        }
+
+        #slide-7 .quiz-option .scratch-c-loop-header {
+            min-height: 34px;
+        }
+
+        #slide-7 .quiz-option .scratch-c-loop-body {
+            display: flex;
+            align-items: center;
+            min-height: 45px;
+        }
+
+        #slide-7 .quiz-option .scratch-c-loop-body .scratch-block {
+            width: 100%;
+        }
+
+    </style>
+</head>
+
+
+<body class="min-h-screen w-screen flex flex-col">
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="w-full bg-alphagen-purple px-4 py-3.5 flex flex-wrap items-center justify-between gap-3 text-white shadow-md rounded-2xl">
+
+            <div class="flex items-center gap-3">
+
+                <a href="#"
+                   class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack px-4 py-2 rounded-xl font-extrabold text-xs md:text-sm shadow-sm transition-all flex items-center gap-2">
+
+                    <span class="tracking-wide">
+                        ALPHAGEN LEARNING
+                    </span>
+
+                </a>
+
+                <span class="font-extrabold text-base md:text-xl tracking-tight text-white">
+                    Scratch - Game Based Learning
+                </span>
+
+            </div>
+
+            <div class="flex items-center gap-3">
+
+                <button onclick="toggleAudio()"
+                        id="audio-btn"
+                        class="bg-alphagen-purpleDark hover:bg-alphagen-purpleMid text-white p-2 rounded-lg transition-all"
+                        title="Toggle Sound">
+
+                    <i class="fa-solid fa-volume-high text-base"
+                       id="sound-icon">
+                    </i>
+
+                </button>
+
+            </div>
+
+        </header>
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main
+    id="main-content"
+    class="flex-1 relative flex justify-center p-4 sm:p-6">
+
+<!-- =========================================================
+     SLIDE 1
+========================================================= -->
+
+<section
+    id="slide-1"
+    class="slide active flex-col items-center justify-center max-w-3xl mx-auto w-full">
+
+    <div
+        class="w-24 h-24 sm:w-32 sm:h-32 bg-brand-purplePale rounded-full flex items-center justify-center mb-6 shadow-inner animate-bounce">
+
+        <span class="text-5xl sm:text-6xl">
+            🔁
+        </span>
+
+    </div>
+
+
+    <h1
+        class="text-3xl sm:text-5xl font-extrabold text-brand-nearBlack mb-4 leading-tight text-center">
+
+        Repeat &
+        <span class="text-brand-purple yellow-highlight">
+            Repeat Until
+        </span>
+
+    </h1>
+
+
+    
+
+
+    <div
+        class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full mb-8">
+
+
+        
+
+    </div>
+
+
+    <button
+        onclick="nextSlide()"
+        class="bg-brand-yellow hover:bg-brand-yellowDark text-brand-nearBlack font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition">
+
+        Let's Explore!
+
+    </button>
+
+</section>
+
+
+<!-- =========================================================
+     SLIDE 2
+========================================================= -->
+
+<section
+    id="slide-2"
+    class="slide flex-col items-center justify-center max-w-4xl mx-auto w-full">
+
+    <div class="text-center mb-4">
+
+        <span
+            class="text-brand-purple font-semibold text-xs uppercase tracking-widest">
+
+            Real Life Analogy
+
+        </span>
+
+        <h2
+            class="text-2xl sm:text-3xl font-bold text-brand-nearBlack">
+
+            Jumping
+
+        </h2>
+
+        <p class="text-xs text-gray-500 mt-1">
+
+            Repeat = you know exactly how many times.
+
+        </p>
+
+    </div>
+
+
+    <div
+        class="bg-white p-5 rounded-2xl border-2 border-brand-purplePale shadow-md w-full max-w-2xl">
+
+
+        <div class="rope-stage">
+
+            <div
+                id="jumper"
+                class="jumper">
+
+                🧒
+
+            </div>
+
+
+            <div
+                id="rope"
+                >
+
+            </div>
+
+
+            <div
+                class="absolute top-3 left-0 right-0 text-center">
+
+                <span
+                    id="jump-count"
+                    class="bg-white px-4 py-2 rounded-xl shadow text-xs font-bold text-brand-purple">
+
+                    Jumps: 0 / 10
+
+                </span>
+
+            </div>
+
+
+
+        </div>
+
+
+        <div class="mt-4 text-center">
+
+            
+
+        </div>
+
+
+        <div class="flex justify-center gap-3 mt-4">
+
+            <button
+                onclick="startJumping()"
+                class="bg-brand-purple hover:bg-brand-purpleDark text-white font-bold px-5 py-2 rounded-xl text-xs">
+
+                ▶ Jump 10 Times
+
+            </button>
+
+
+            <button
+                onclick="resetJumping()"
+                class="bg-gray-100 hover:bg-gray-200 text-brand-nearBlack font-bold px-5 py-2 rounded-xl text-xs">
+
+                Reset
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SLIDE 3
+========================================================= -->
+
+<section
+    id="slide-3"
+    class="slide flex-col items-center justify-center max-w-4xl mx-auto w-full">
+
+    <div class="text-center mb-4">
+
+        <span
+            class="text-brand-cyanDark font-semibold text-xs uppercase tracking-widest">
+
+            Real Life Analogy
+
+        </span>
+
+        <h2
+            class="text-2xl sm:text-3xl font-bold text-brand-nearBlack">
+
+            Filling a Water Bottle
+
+        </h2>
+
+
+    </div>
+
+
+    <div
+        class="bg-white p-5 rounded-2xl border-2 border-brand-purplePale shadow-md w-full max-w-2xl">
+
+        <div class="bottle-stage">
+
+            <div class="bottle">
+
+                <div class="bottle-cap"></div>
+
+                <div
+                    id="water"
+                    class="water">
+                </div>
+
+                <div class="water-label">
+                    <span id="water-percent">0%</span>
+                </div>
+
+            </div>
+
+
+            <div
+                id="water-status"
+                class="absolute top-4 left-0 right-0 text-center text-xs font-bold text-brand-cyanDark">
+
+                Bottle is empty.
+
+            </div>
+
+        </div>
+
+
+        <div class="mt-4 flex justify-center">
+
+            <div
+                class="bg-brand-cyanPale px-5 py-3 rounded-xl text-center">
+
+                <div class="font-bold text-sm text-brand-cyanDark">
+                    Repeat Until
+                </div>
+
+                <div class="text-xs text-gray-600 mt-1">
+                    Keep filling until the bottle is full.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="flex justify-center gap-3 mt-4">
+
+            <button
+                onclick="startFilling()"
+                class="bg-brand-cyanDark hover:opacity-90 text-white font-bold px-5 py-2 rounded-xl text-xs">
+
+                ▶ Fill Bottle
+
+            </button>
+
+
+            <button
+                onclick="resetBottle()"
+                class="bg-gray-100 hover:bg-gray-200 text-brand-nearBlack font-bold px-5 py-2 rounded-xl text-xs">
+
+                Reset
+
+            </button>
+
+        </div>
+
+
+        
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     SLIDE 4 — REPEAT & REPEAT UNTIL EXAMPLES
+========================================================= -->
+
+<section
+    id="slide-4"
+    class="slide flex-col items-center justify-center max-w-5xl mx-auto w-full">
+
+    <div class="bg-white p-6 rounded-2xl border-2 border-brand-purplePale shadow-sm w-full">
+
+        <div class="text-center mb-6">
+            <span class="text-brand-purple font-semibold text-xs uppercase tracking-widest">
+                Code Examples
+            </span>
+
+            <h2 class="text-xl sm:text-2xl font-bold text-brand-nearBlack">
+                Repeat or Repeat Until?
+            </h2>
+
+            <p class="text-xs text-gray-500 mt-1">
+                Look at the code blocks. They do different jobs!
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+
+            <!-- REPEAT EXAMPLE -->
+            <div class="border-2 border-brand-purplePale rounded-2xl p-4 bg-brand-purpleGhost">
+
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-brand-purplePale flex items-center justify-center text-xl">
+                        🔢
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-brand-purple">
+                            Repeat
+                        </h3>
+                        <p class="text-xs text-gray-500">
+                            You know the number.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Separate Scratch Code Box -->
+                <div class="bg-white border-2 border-brand-purplePale rounded-xl p-3 mb-4">
+                    <div class="text-[10px] font-extrabold text-brand-purple mb-2">
+                        CODE BLOCK
+                    </div>
+
+                    <div class="scratch-c-loop">
+                        <div class="scratch-c-loop-header">
+                            repeat
+                            <span class="scratch-input">10</span>
+                        </div>
+
+                        <div class="scratch-c-loop-body">
+                            <div class="scratch-block scratch-blue w-full text-[11px]">
+                                jump
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scratch-stage h-[250px]">
+                    <div class="flex-1 w-full flex items-center justify-center">
+                        <div id="repeat-sprite-jumper" class="text-6xl">
+                            🧒
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-gray-50 border-t border-gray-100 p-3 flex items-center justify-between gap-2">
+                        <button
+                            onclick="runRepeatDemo()"
+                            class="bg-brand-purple text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-brand-purpleDark">
+                            ▶ Run 10 Jumps
+                        </button>
+
+                        <span id="repeat-status-tag" class="text-[10px] font-semibold text-gray-500 text-right">
+                            Click Run
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- REPEAT UNTIL EXAMPLE -->
+            <div class="border-2 border-brand-cyanPale rounded-2xl p-4 bg-brand-cyanPale/30">
+
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-brand-cyanPale flex items-center justify-center text-xl">
+                        🎯
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-brand-cyanDark">
+                            Repeat Until
+                        </h3>
+                        <p class="text-xs text-gray-500">
+                            You know when to stop.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Separate Scratch Code Box -->
+                <div class="bg-white border-2 border-brand-cyanPale rounded-xl p-3 mb-4">
+                    <div class="text-[10px] font-extrabold text-brand-cyanDark mb-2">
+                        CODE BLOCK
+                    </div>
+
+                    <div class="scratch-c-loop">
+                        <div class="scratch-c-loop-header">
+                            repeat until
+                            <span class="scratch-boolean ml-1">
+                                touching edge?
+                            </span>
+                        </div>
+
+                        <div class="scratch-c-loop-body">
+                            <div class="scratch-block scratch-blue w-full text-[11px]">
+                                move 10 steps
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scratch-stage h-[250px]">
+                    <div class="flex-1 w-full flex items-center justify-center relative p-4 overflow-hidden">
+                        <div
+                            id="until-sprite-cat"
+                            class="absolute left-4 text-5xl transition-all duration-300">
+                            🐱
+                        </div>
+
+                        <div
+                            id="until-edge-marker"
+                            class="absolute right-2 top-0 bottom-0 w-2 bg-red-400 border-l border-dashed border-white">
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-gray-50 border-t border-gray-100 p-3 flex items-center justify-between gap-2">
+                        <button
+                            onclick="runUntilDemo()"
+                            class="bg-brand-cyanDark text-white text-xs font-bold px-4 py-2 rounded-lg hover:opacity-90">
+                            ▶ Run to Edge
+                        </button>
+
+                        <span id="until-status-tag" class="text-[10px] font-semibold text-gray-500 text-right">
+                            Click Run
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+       
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SLIDE 7
+========================================================= -->
+
+<section
+    id="slide-7"
+    class="slide flex-col items-center justify-center max-w-4xl mx-auto w-full">
+
+    <div class="text-center mb-4">
+
+        <span
+            class="text-brand-purple font-semibold text-xs uppercase tracking-widest">
+
+            Brain Test
+
+        </span>
+
+        <h2
+            class="text-2xl sm:text-3xl font-bold text-brand-nearBlack">
+
+            Check Your Understanding
+
+        </h2>
+
+    </div>
+
+
+    <div
+        class="bg-white p-6 rounded-2xl border-2 border-brand-purplePale shadow-sm w-full text-center max-w-xl">
+
+        <div class="text-4xl mb-3">
+            🧠
+        </div>
+
+
+        <h3
+            class="font-bold text-sm sm:text-base text-brand-nearBlack mb-4">
+
+            You want a sprite to jump exactly 10 times.
+
+            <br>
+
+            Which Scratch block should you use?
+
+        </h3>
+
+
+        <div
+            class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mx-auto">
+
+
+            <!-- A -->
+
+            <button
+                onclick="checkQuiz(true)"
+                class="quiz-option text-left bg-gray-100 hover:bg-brand-purplePale p-3 rounded-xl">
+
+                <div class="text-[10px] font-bold text-gray-500 mb-2">
+                    A
+                </div>
+
+                <div
+                    class="scratch-c-loop w-full">
+
+                    <div class="scratch-c-loop-header">
+
+                        repeat
+                        <span class="scratch-input">
+                            10
+                        </span>
+
+                    </div>
+
+                    <div class="scratch-c-loop-body">
+
+                        <div class="scratch-block scratch-blue w-full text-[10px]">
+                            jump
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </button>
+
+
+            <!-- B -->
+
+            <button
+                onclick="checkQuiz(false)"
+                class="quiz-option text-left bg-gray-100 hover:bg-brand-purplePale p-3 rounded-xl">
+
+                <div class="text-[10px] font-bold text-gray-500 mb-2">
+                    B
+                </div>
+
+                <div
+                    class="scratch-c-loop w-full">
+
+                    <div class="scratch-c-loop-header">
+
+                        repeat until
+
+                        <span class="scratch-boolean">
+                            touching edge?
+                        </span>
+
+                    </div>
+
+                    <div class="scratch-c-loop-body">
+
+                        <div class="scratch-block scratch-blue w-full text-[10px]">
+                            jump
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </button>
+
+
+            <!-- C -->
+
+            <button
+                onclick="checkQuiz(false)"
+                class="quiz-option text-left bg-gray-100 hover:bg-brand-purplePale p-3 rounded-xl">
+
+                <div class="text-[10px] font-bold text-gray-500 mb-2">
+                    C
+                </div>
+
+                <div class="scratch-c-loop w-full">
+                    <div class="scratch-c-loop-header">forever</div>
+                    <div class="scratch-c-loop-body">
+                        <div class="scratch-block scratch-blue w-full text-[10px]">jump</div>
+                    </div>
+                </div>
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="quiz-feedback"
+            class="quiz-feedback mt-4 text-xs font-bold">
+
+        </div>
+
+
+        <div
+            class="mt-6 pt-5 border-t border-gray-100">
+
+            <h3
+                class="font-bold text-sm text-brand-nearBlack mb-3">
+
+                One More!
+
+            </h3>
+
+            <p
+                class="text-xs text-gray-600 mb-4">
+
+                You don't know how many scoops of ice cream are needed.
+                You stop when the bowl is full.
+
+            </p>
+
+
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+
+                <!-- Repeat Until -->
+
+                <button
+                    onclick="checkSecondQuiz(true)"
+                    class="quiz-option text-left bg-brand-purpleGhost hover:bg-brand-purplePale p-3 rounded-xl">
+
+                    <div class="text-[10px] font-bold text-gray-500 mb-2">
+                        A
+                    </div>
+
+                    <div
+                        class="scratch-c-loop">
+
+                        <div class="scratch-c-loop-header">
+
+                            repeat until
+
+                            <span class="scratch-boolean">
+                                bowl full?
+                            </span>
+
+                        </div>
+
+                        <div class="scratch-c-loop-body">
+
+                            <div
+                                class="scratch-block scratch-blue w-full text-[10px]">
+
+                                add scoop
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </button>
+
+
+                <!-- Repeat 5 -->
+
+                <button
+                    onclick="checkSecondQuiz(false)"
+                    class="quiz-option text-left bg-gray-100 hover:bg-gray-200 p-3 rounded-xl">
+
+                    <div class="text-[10px] font-bold text-gray-500 mb-2">
+                        B
+                    </div>
+
+                    <div
+                        class="scratch-c-loop">
+
+                        <div class="scratch-c-loop-header">
+
+                            repeat
+                            <span class="scratch-input">
+                                5
+                            </span>
+
+                        </div>
+
+                        <div class="scratch-c-loop-body">
+
+                            <div
+                                class="scratch-block scratch-blue w-full text-[10px]">
+
+                                add scoop
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="second-feedback"
+                class="mt-3 text-xs font-bold">
+
+            </div>
+
+            <div class="mt-5 text-center">
+                <button type="button" onclick="finishLesson()"
+                    class="bg-brand-yellow hover:bg-brand-yellowDark text-brand-nearBlack font-bold text-sm px-6 py-3 rounded-xl shadow-md transition">
+                    <i class="fa-solid fa-flag-checkered mr-2"></i>Finish Lesson
+                </button>
+                <div id="lesson-finished-message" class="hidden mt-4 text-brand-purple font-extrabold text-sm" aria-live="polite">
+                    Great job! You've completed the lesson!
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer
+    class="bg-white border-t border-gray-200 px-6 py-3 flex justify-between items-center z-10 flex-shrink-0">
+
+
+    <button
+        id="btn-prev"
+        onclick="prevSlide()"
+        class="bg-gray-100 hover:bg-gray-200 text-brand-nearBlack font-bold px-4 py-2 rounded-xl text-xs sm:text-sm">
+
+        ⬅ Previous
+
+    </button>
+
+
+    
+
+
+    <button
+        id="btn-next"
+        onclick="nextSlide()"
+        class="bg-brand-purple hover:bg-brand-purpleDark text-white font-bold px-5 py-2 rounded-xl text-xs sm:text-sm">
+
+        Next ➡
+
+    </button>
+
+</footer>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+let currentSlide = 1;
+
+const totalSlides = 5;
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+const audioCtx =
+    new (window.AudioContext || window.webkitAudioContext)();
+
+
+function playSessionSound() {
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const osc = audioCtx.createOscillator();
+
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+
+    gain.connect(audioCtx.destination);
+
+    osc.type = 'triangle';
+
+    osc.frequency.setValueAtTime(
+        400,
+        audioCtx.currentTime
+    );
+
+    gain.gain.setValueAtTime(
+        0.04,
+        audioCtx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioCtx.currentTime + 0.05
+    );
+
+    osc.start();
+
+    osc.stop(
+        audioCtx.currentTime + 0.05
+    );
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function updateSlide() {
+
+    document.querySelectorAll('.slide')
+        .forEach((slide, index) => {
+
+            slide.classList.remove('active');
+
+            if (index + 1 === currentSlide) {
+                slide.classList.add('active');
+            }
+
+        });
+
+
+    document.getElementById(
+        'current-slide-num'
+    ).innerText = currentSlide;
+
+
+    document.getElementById(
+        'slide-jump'
+    ).value = currentSlide;
+
+
+    document.getElementById(
+        'btn-prev'
+    ).style.visibility =
+        currentSlide === 1
+            ? 'hidden'
+            : 'visible';
+
+
+    document.getElementById(
+        'btn-next'
+    ).style.visibility =
+        currentSlide === totalSlides
+            ? 'hidden'
+            : 'visible';
+
+
+    document.getElementById(
+        'main-content'
+    ).scrollTop = 0;
+
+}
+
+
+function nextSlide() {
+
+    if (currentSlide < totalSlides) {
+
+        playSessionSound();
+
+        currentSlide++;
+
+        updateSlide();
+
+    }
+
+}
+
+
+function prevSlide() {
+
+    if (currentSlide > 1) {
+
+        playSessionSound();
+
+        currentSlide--;
+
+        updateSlide();
+
+    }
+
+}
+
+
+function jumpToSlide(num) {
+
+    playSessionSound();
+
+    currentSlide =
+        parseInt(num);
+
+    updateSlide();
+
+}
+
+
+/* =========================================================
+   SLIDE 2 — JUMPING
+========================================================= */
+
+let jumpCount = 0;
+
+let jumpTimer = null;
+
+
+function startJumping() {
+
+    playSessionSound();
+
+    resetJumping(false);
+
+
+    const jumper =
+        document.getElementById('jumper');
+
+    const rope =
+        document.getElementById('rope');
+
+    const count =
+        document.getElementById('jump-count');
+
+    const message =
+        document.getElementById('jump-message');
+
+
+    jumpTimer =
+        setInterval(() => {
+
+            if (jumpCount >= 10) {
+
+                clearInterval(jumpTimer);
+
+                jumpTimer = null;
+
+                message.innerText =
+                    "Done! 10 jumps → stop.";
+
+                message.className =
+                    "absolute bottom-4 left-0 right-0 text-center text-xs font-bold text-brand-green";
+
+                confetti({
+                    particleCount: 60,
+                    spread: 55,
+                    origin: { y: 0.65 }
+                });
+
+                return;
+            }
+
+
+            jumpCount++;
+
+
+            count.innerText =
+                "Jumps: " + jumpCount + " / 10";
+
+
+            jumper.classList.remove('jumping');
+
+            rope.classList.remove('rope-spin');
+
+
+            void jumper.offsetWidth;
+
+
+            jumper.classList.add('jumping');
+
+            rope.classList.add('rope-spin');
+
+
+            message.innerText =
+                "Repeat → jump " + jumpCount + " times.";
+
+        }, 500);
+
+}
+
+
+function resetJumping(playSound = true) {
+
+    if (playSound) {
+        playSessionSound();
+    }
+
+    if (jumpTimer) {
+
+        clearInterval(jumpTimer);
+
+        jumpTimer = null;
+
+    }
+
+    jumpCount = 0;
+
+
+    document.getElementById(
+        'jump-count'
+    ).innerText =
+        "Jumps: 0 / 10";
+
+
+   
+
+
+    document.getElementById(
+        'jumper'
+    ).classList.remove('jumping');
+
+
+    document.getElementById(
+        'rope'
+    ).classList.remove('rope-spin');
+
+}
+
+
+/* =========================================================
+   SLIDE 3 — WATER BOTTLE
+========================================================= */
+
+let waterLevel = 0;
+
+let waterTimer = null;
+
+
+function startFilling() {
+
+    playSessionSound();
+
+    resetBottle(false);
+
+
+    waterTimer =
+        setInterval(() => {
+
+            if (waterLevel >= 100) {
+
+                clearInterval(waterTimer);
+
+                waterTimer = null;
+
+
+                document.getElementById(
+                    'water-status'
+                ).innerText =
+                    "Bottle is full → stop!";
+
+
+                confetti({
+                    particleCount: 70,
+                    spread: 60,
+                    origin: { y: 0.65 }
+                });
+
+                return;
+            }
+
+
+            waterLevel += 10;
+
+
+            document.getElementById(
+                'water'
+            ).style.height =
+                waterLevel + "%";
+
+
+            document.getElementById(
+                'water-percent'
+            ).innerText =
+                waterLevel + "%";
+
+
+            document.getElementById(
+                'water-status'
+            ).innerText =
+                "Keep filling...";
+
+        }, 350);
+
+}
+
+
+function resetBottle(playSound = true) {
+
+    if (playSound) {
+        playSessionSound();
+    }
+
+    if (waterTimer) {
+
+        clearInterval(waterTimer);
+
+        waterTimer = null;
+
+    }
+
+    waterLevel = 0;
+
+
+    document.getElementById(
+        'water'
+    ).style.height =
+        "0%";
+
+
+    document.getElementById(
+        'water-percent'
+    ).innerText =
+        "0%";
+
+
+    document.getElementById(
+        'water-status'
+    ).innerText =
+        "Bottle is empty.";
+
+}
+
+
+/* =========================================================
+   SLIDE 4 — COMPARISON
+========================================================= */
+
+function showComparison(type) {
+
+    playSessionSound();
+
+
+    document.getElementById(
+        'repeat-card'
+    ).classList.remove('active-choice');
+
+
+    document.getElementById(
+        'until-card'
+    ).classList.remove('active-choice');
+
+
+    if (type === 'repeat') {
+
+        document.getElementById(
+            'repeat-card'
+        ).classList.add('active-choice');
+
+
+        document.getElementById(
+            'comparison-message'
+        ).innerText =
+            "Repeat is best when you already know the number of times.";
+
+    }
+
+
+    if (type === 'until') {
+
+        document.getElementById(
+            'until-card'
+        ).classList.add('active-choice');
+
+
+        document.getElementById(
+            'comparison-message'
+        ).innerText =
+            "Repeat Until is best when you know the goal, but not the number of repeats.";
+
+    }
+
+}
+
+
+function answerComparison(type) {
+
+    playSessionSound();
+
+
+    const message =
+        document.getElementById(
+            'comparison-message'
+        );
+
+
+    if (type === 'repeat') {
+
+        message.innerText =
+            "Correct! You know the number → use Repeat 5.";
+
+
+        message.className =
+            "mt-5 bg-brand-purplePale border border-brand-purpleMid/30 rounded-xl px-6 py-4 text-center text-xs font-semibold text-brand-purple max-w-2xl";
+
+
+        confetti({
+            particleCount: 35,
+            spread: 50,
+            origin: { y: 0.7 }
+        });
+
+    }
+
+
+    if (type === 'until') {
+
+        message.innerText =
+            "Correct! You know the target height, but not the number of blocks → use Repeat Until.";
+
+
+        message.className =
+            "mt-5 bg-brand-cyanPale border border-brand-cyan/30 rounded-xl px-6 py-4 text-center text-xs font-semibold text-brand-cyanDark max-w-2xl";
+
+
+        confetti({
+            particleCount: 35,
+            spread: 50,
+            origin: { y: 0.7 }
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   SLIDE 5 — REPEAT & REPEAT UNTIL DEMOS
+========================================================= */
+
+let repeatDemoTimer = null;
+
+function runRepeatDemo() {
+
+    playSessionSound();
+
+    if (repeatDemoTimer) clearInterval(repeatDemoTimer);
+
+    const jumperSprite = document.getElementById('repeat-sprite-jumper');
+    const statusTag = document.getElementById('repeat-status-tag');
+
+    let current = 0;
+
+    statusTag.innerText = 'Running: repeat 10 times';
+
+    repeatDemoTimer = setInterval(() => {
+
+        if (current >= 10) {
+
+            clearInterval(repeatDemoTimer);
+
+            repeatDemoTimer = null;
+
+            statusTag.innerText = 'Completed 10 jumps!';
+
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { y: 0.6 }
+            });
+
+            return;
+        }
+
+        current++;
+
+        jumperSprite.classList.remove('jumping');
+
+        void jumperSprite.offsetWidth;
+
+        jumperSprite.classList.add('jumping');
+
+        playSessionSound();
+
+    }, 350);
+
+}
+
+
+let untilDemoTimer = null;
+
+function runUntilDemo() {
+
+    playSessionSound();
+
+    if (untilDemoTimer) clearInterval(untilDemoTimer);
+
+    const catSprite = document.getElementById('until-sprite-cat');
+    const statusTag = document.getElementById('until-status-tag');
+
+    catSprite.style.left = '16px';
+
+    statusTag.innerText = 'Running until touching edge...';
+
+    let pos = 16;
+
+    untilDemoTimer = setInterval(() => {
+
+        if (pos >= 380) {
+
+            clearInterval(untilDemoTimer);
+
+            untilDemoTimer = null;
+
+            statusTag.innerText = 'Stopped! Touched edge.';
+
+            confetti({
+                particleCount: 50,
+                spread: 50,
+                origin: { y: 0.6 }
+            });
+
+            return;
+        }
+
+        pos += 40;
+
+        catSprite.style.left = pos + 'px';
+
+        playSessionSound();
+
+    }, 300);
+
+}
+
+
+/* =========================================================
+   SLIDE 6 — QUIZ
+========================================================= */
+
+function checkQuiz(correct) {
+
+    playSessionSound();
+
+
+    const feedback =
+        document.getElementById(
+            'quiz-feedback'
+        );
+
+
+    if (correct) {
+
+        feedback.innerText =
+            "Correct! You know the number → use Repeat 10.";
+
+
+        feedback.className =
+            "quiz-feedback mt-4 text-xs font-bold text-brand-green";
+
+
+        confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { y: 0.65 }
+        });
+
+    } else {
+
+        feedback.innerText =
+            "Not quite. If you know the number, use Repeat.";
+
+
+        feedback.className =
+            "quiz-feedback mt-4 text-xs font-bold text-brand-coral";
+
+    }
+
+}
+
+
+function checkSecondQuiz(correct) {
+
+    playSessionSound();
+
+
+    const feedback =
+        document.getElementById(
+            'second-feedback'
+        );
+
+
+    if (correct) {
+
+        feedback.innerText =
+            "Correct! The bowl is the goal, so use Repeat Until.";
+
+
+        feedback.className =
+            "mt-3 text-xs font-bold text-brand-purple";
+
+
+        confetti({
+            particleCount: 70,
+            spread: 60,
+            origin: { y: 0.65 }
+        });
+
+    } else {
+
+        feedback.innerText =
+            "Think about it: do you know exactly how many scoops you need?";
+
+
+        feedback.className =
+            "mt-3 text-xs font-bold text-brand-coral";
+
+    }
+
+}
+
+
+
+function finishLesson() {
+    playSessionSound();
+    document.getElementById('lesson-finished-message').classList.remove('hidden');
+    if (typeof confetti === 'function') {
+        confetti({ particleCount: 160, spread: 90, origin: { y: 0.65 } });
+    }
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+updateSlide();
+
+
+        let audioEnabled = true;
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (icon) {
+                icon.className = audioEnabled
+                    ? 'fa-solid fa-volume-high text-base'
+                    : 'fa-solid fa-volume-xmark text-base';
+            }
+        }
+</script>
+
+</body>
+</html>
